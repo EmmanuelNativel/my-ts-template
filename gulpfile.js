@@ -172,10 +172,18 @@ function git_push(next) {
     });
 };
 
+function git_pull(next) {
+    git.pull('origin', function (err) {
+        if (err) throw err;
+        next();
+    });
+};
+
 const g_commit = series(git_add, git_commit, git_status);
 const g_add = series(git_add, git_status);
 const g_push = series(git_push, git_status);
-const git_send = series(git_add, git_commit, git_push, git_status);
+const g_send = series(git_add, git_commit, git_push, git_status);
+const g_pull = series(git_pull, git_status);
 
 /* #region  Publication des tâches */
 gulp.task('clean', 'Clean build and buildx folders.', ['cl'], clean);
@@ -190,8 +198,9 @@ gulp.task('git_add', 'Stage modified files', ['ga'], g_add);
 gulp.task('git_commit', 'Commit a FIX or a FEAT', ['gc'], g_commit);
 gulp.task('git_status', 'Commit status', ['gs'], git_status);
 gulp.task('git_reset', 'Reset last commit', ['gr'], git_reset_last_commit);
-gulp.task('git_push', 'Push to the current branch.', ['gp'], g_push);
-gulp.task('git_send', 'Commit and push changes', ['g'], git_send);
-// gulp.task('test', test);
+gulp.task('git_push', 'Push to the current branch.', ['gph'], g_push);
+gulp.task('git_send', 'Commit and push changes', ['g'], g_send);
+gulp.task('git_pull', 'Pull changes from current branch', ['gpl'], g_pull);
+
 exports.default = start_dev;
 /* #endregion */
