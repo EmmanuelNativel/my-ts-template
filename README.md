@@ -58,5 +58,6 @@ gulp git_commit
 `--feat` : Marque le commit en tant que "feature" avec le tag **[FEAT]**.
 
 `--m` : Message associé au commit.
+> Par exemple la commande **`gulp --feat --m "Ajout des utilisateurs"`** génèrera le message de commit ```[FEAT] Ajout des utilisateurs```
 
 
