@@ -1,0 +1,8 @@
+{
+    "exclude": ["build/**/*"],
+    "target": "es6",
+    "noImplicitAny": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "removeComments": true
+}
