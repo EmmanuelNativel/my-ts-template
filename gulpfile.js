@@ -194,13 +194,23 @@ gulp.task('build', 'Build the full code.', ['b'], build);
 gulp.task('build_prod', 'Build the full code and uglify client code for production.', ['prod'], build_prod);
 gulp.task('start_dev', 'Start development mode : build and reload when a file change.', ['dev'], start_dev);
 
-gulp.task('git_init', 'git initialization', ['gi'], git_initialization);
+gulp.task('git_init', 'git initialization', ['gi'], {
+    '--url': '[STRING] URL of the git remote repository',
+},  git_initialization);
 gulp.task('git_add', 'Stage modified files', ['ga'], g_add);
-gulp.task('git_commit', 'Commit a FIX or a FEAT', ['gc'], g_commit);
+gulp.task('git_commit', 'Commit a FIX or a FEAT', ['gc'], {
+    '--m': '[STRING] Message of the commit',
+    '--fix': '[BOOL] Tag the commit as a FIX (bug fix)',
+    '--feat': '[BOOL] Tag the commit as a FEAT (new feature)',
+}, g_commit);
 gulp.task('git_status', 'Commit status', ['gs'], git_status);
 gulp.task('git_reset', 'Reset last commit', ['gr'], git_reset_last_commit);
 gulp.task('git_push', 'Push to the current branch.', ['gph'], g_push);
-gulp.task('git_send', 'Commit and push changes', ['g'], g_send);
+gulp.task('git_send', 'Commit and push changes', ['g'], {
+    '--m': '[STRING] Message of the commit',
+    '--fix': '[BOOL] Tag the commit as a FIX (bug fix)',
+    '--feat': '[BOOL] Tag the commit as a FEAT (new feature)',
+}, g_send);
 gulp.task('git_pull', 'Pull changes from current branch', ['gpl'], g_pull);
 
 exports.default = start_dev;

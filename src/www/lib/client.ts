@@ -50,10 +50,11 @@ io_client.on("disconnect", () => {
  // TODO: Faire le projet demandé (voir ci-dessous)
  *  - toolchain 
         - gulp dev (avec gulp.watch) (hotreloading) [OK]
-        - git --> https://stackoverflow.com/questions/36188219/add-commit-and-push-at-once-using-gulp-git/36192075
+        - git [OK]
         -  offuscation de la partie cliente uniquement [OK]
     - documentation :
-        - Quand on tape les commandes il faut avoir le help bien fait (gulp-help)
+        - Quand on tape les commandes il faut avoir le help bien fait (gulp-help) [OK]
+            --> AJOUTER LES OPTIONS [OK]
         - Il faut aussi faire un markdown : 
             - Comment organiser le dossier ?
             - Description des tâches
