@@ -177,6 +177,7 @@ function git_pull(next) {
         if (err) throw err;
         next();
     });
+    next();
 };
 
 const g_commit = series(git_add, git_commit, git_status);
