@@ -133,23 +133,40 @@ function git_addremote(next) {
 const git_initialization = series(git_init, git_addremote);
 
 function git_add() {
-    return gulp.src(['./*', '.gitignore'])
-        .pipe(git.add({args: '-A', quiet: true}));
+    return gulp.src(['./*', '.gitignore', '!build', '!buildx', '!node_modules', '!package-lock.json'])
+        .pipe(git.add({ args: '-A', quiet: true }));
 };
 
 function git_commit() {
-    const message = args.m;
+    const message = args.m || "commit changes";
     let type = "";
     if (args.fix) type = "[FIX]";
     else if (args.feat) type = "[FEAT]";
 
     const commitText = `${type} ${message}`;
 
+    console.log(commitText);
+
     return gulp.src(['./*', '!build', '!buildx', '!node_modules', '!package-lock.json'])
         .pipe(git.commit(commitText));
 }
 
-const commit = series(git_add, git_commit);
+function git_reset_last_commit(next) {
+    git.reset('HEAD~1', function (err) {
+        if (err) throw err;
+        next();
+    });
+}
+
+function git_status(next) {
+    git.status(function (err, stdout) {
+        if (err) throw err;
+        next();
+    });
+};
+
+const g_commit = series(git_add, git_commit, git_status);
+const g_add = series(git_add, git_status)
 
 /* #region  Publication des tâches */
 gulp.task('clean', 'Clean build and buildx folders.', ['cl'], clean);
@@ -160,8 +177,10 @@ gulp.task('build_prod', 'Build the full code and uglify client code for producti
 gulp.task('start_dev', 'Start development mode : build and reload when a file change.', ['dev'], start_dev);
 
 gulp.task('git_init', 'git initialization', ['gi'], git_initialization);
-gulp.task('git_add', 'Stage modified files', ['ga'], git_add);
-gulp.task('git_commit', 'Commit a FIX or a FEAT', ['gc'], git_commit);
+gulp.task('git_add', 'Stage modified files', ['ga'], g_add);
+gulp.task('git_commit', 'Commit a FIX or a FEAT', ['gc'], g_commit);
+gulp.task('git_status', 'Commit status', ['gs'], git_status);
+gulp.task('git_reset', 'Reset last commit', ['gr'], git_reset_last_commit);
 // gulp.task('test', test);
 exports.default = start_dev;
 /* #endregion */
