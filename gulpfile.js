@@ -165,8 +165,17 @@ function git_status(next) {
     });
 };
 
+function git_push(next) {
+    git.push('origin', function (err) {
+        if (err) throw err;
+        next();
+    });
+};
+
 const g_commit = series(git_add, git_commit, git_status);
-const g_add = series(git_add, git_status)
+const g_add = series(git_add, git_status);
+const g_push = series(git_push, git_status);
+const git_send = series(git_add, git_commit, git_push, git_status);
 
 /* #region  Publication des tâches */
 gulp.task('clean', 'Clean build and buildx folders.', ['cl'], clean);
@@ -181,6 +190,8 @@ gulp.task('git_add', 'Stage modified files', ['ga'], g_add);
 gulp.task('git_commit', 'Commit a FIX or a FEAT', ['gc'], g_commit);
 gulp.task('git_status', 'Commit status', ['gs'], git_status);
 gulp.task('git_reset', 'Reset last commit', ['gr'], git_reset_last_commit);
+gulp.task('git_push', 'Push to the current branch.', ['gp'], g_push);
+gulp.task('git_send', 'Commit and push changes', ['g'], git_send);
 // gulp.task('test', test);
 exports.default = start_dev;
 /* #endregion */
