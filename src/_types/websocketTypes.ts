@@ -1,20 +1,15 @@
-enum MESSAGE {
-    DATA = 'DATA'
-};
-
-interface WSmessage {
-    type: MESSAGE;
-    payload: any;
-    target?: string;
+enum MESSAGE_TYPE {
+    GET_TIME = "GET_TIME"
 }
 
-interface privateWSmessage {
-    type: MESSAGE;
-    payload: any;
+interface WSmessage {
+    type: string,
+    payload?: Record<string, any>,
+    error?: string
+    //... add other message's common properties
 }
 
 export {
-    MESSAGE,
-    WSmessage,
-    privateWSmessage
+    MESSAGE_TYPE,
+    WSmessage
 }

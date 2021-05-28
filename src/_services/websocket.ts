@@ -1,19 +1,45 @@
 import { Server as ServerWS, Socket } from 'socket.io';
-import { MESSAGE, WSmessage, privateWSmessage} from '../_types/websocketTypes';
+import { MESSAGE_TYPE, WSmessage } from '../_types/websocketTypes';
+
+/* #region  APP logic */
+const handleMessageType = (message: WSmessage) => {
+    const { type, payload } = message || {};
+    console.log(`[MESSAGE] | ${type}`, payload, message);
+
+    const separator = payload?.separator;
+    const date = new Date();
+    const time = [date.getHours(), date.getMinutes(), date.getSeconds()].join(separator);
+
+    const response: WSmessage = {
+        type,
+        payload: {
+            time
+        }
+    }
+
+    return response;
+};
+/* #endregion */
+
+/* #region  ACTIONS */
+const ACTIONS: Record<MESSAGE_TYPE, (msg: WSmessage) => void> = {
+    GET_TIME: handleMessageType,
+    // handle more actions
+}
+/* #endregion */
+
+/* #region  Websocket Wrapper */
 
 // Ecoute des messages WS
 const listen = (wsServer: ServerWS) => {
     wsServer.on('connection', (socket_client: Socket) => {
         console.log("Un client se connecte...");
 
-        // TODO: Etablie la communication WS client <=> Serveur
-
-        // Exemple: 
-        sendPrivateMessage(socket_client, {
-            type: MESSAGE.DATA,
-            payload: {
-                response: "Voici la réponse au message DATA !"
-            }
+        Object.entries(ACTIONS).forEach(([action, fn]) => {
+            socket_client.on(action, (msg: WSmessage) => {
+                const response = fn(msg);
+                socket_client.emit(action, response);
+            });
         });
 
         socket_client.on('disconnect', () => {
@@ -23,40 +49,21 @@ const listen = (wsServer: ServerWS) => {
 }
 
 // Envoyer un message à toutes les sockets connectées
-const broadcast = (server: ServerWS, type: string, msg: any) => {
-    server.emit(type, msg);
+const broadcast = (server: ServerWS, message: WSmessage) => {
+    const { type } = message;
+    server.emit(type, message);
 }
 
-// Envoyer un message à un groupe d'utilisateurs (si pas de target => broadcast)
-const sendMessage = (server: ServerWS, message: WSmessage) => {
-    const { type, payload } = message;
-
-    if (message.target)
-        server.to(message.target).emit(type, payload);
-    else
-        broadcast(server, type, payload);
-}
 
 // Envoyer un message à un seul utilisateur
-const sendPrivateMessage = (client: Socket, message: privateWSmessage) => {
-    const { type, payload } = message;
-    client.emit(type, payload);
+const sendMessage = (client: Socket, message: WSmessage) => {
+    const { type } = message;
+    client.emit(type, message);
 }
-
-// Ajouter une socket dans une room
-const joinRoom = (client: Socket, room: string) => {
-    client.join(room);
-}
-
-// Retirer une socket d'une room
-const leaveRoom = (client: Socket, room: string) => {
-    client.leave(room);
-}
+/* #endregion */
 
 export {
     listen,
     sendMessage,
     broadcast,
-    joinRoom,
-    leaveRoom
 }

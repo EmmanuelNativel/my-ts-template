@@ -16,7 +16,10 @@ const git = require('gulp-git');
 
 /* #region  Configurations */
 const GULP_CONFIG = {
-    git_repository: "https://github.com/EmmanuelNativel/my-ts-template.git"
+    git_repository: "https://github.com/EmmanuelNativel/my-ts-template.git",
+    server_port: 8080,
+    build_root_file: "server.js",
+    gitignore: ['!build', '!buildx', '!node_modules', '!package-lock.json']
 }
 
 const TS_CONFIG = {
@@ -27,13 +30,10 @@ const TS_CONFIG = {
     removeComments: true
 }
 
-const FILE_TO_RUN = 'server.js';
-
 help(gulp, {});
 /* #endregion */
 
-
-/* #region  Définition des tâches */
+/* #region  Tâches Build et dev */
 
 function cleanClient(next) {
     return src('build/*')
@@ -82,7 +82,7 @@ function buildx() {
 
 function initBrowserSync(next) {
     browserSync.init({
-        proxy: "localhost:8080"
+        proxy: `localhost:${GULP_CONFIG.server_port}`
     });
     next();
 }
@@ -90,7 +90,7 @@ function initBrowserSync(next) {
 function dev_watch(next) {
     var started = false;
     nodemon({
-        script: 'build/server.js',
+        script: `build/${GULP_CONFIG.build_root_file}`,
         watch: "build/**"
     }).on('start', function () {
         if (!started) {
@@ -115,6 +115,7 @@ const start_dev = series(clean, build, initBrowserSync, dev_watch);
 
 /* #endregion */
 
+/* #region  Tâches GIT */
 function git_init(next) {
     git.init(function (err) {
         if (err) throw err;
@@ -133,7 +134,7 @@ function git_addremote(next) {
 const git_initialization = series(git_init, git_addremote);
 
 function git_add() {
-    return gulp.src(['./*', '.gitignore', '!build', '!buildx', '!node_modules', '!package-lock.json'])
+    return gulp.src(['./*', '.gitignore', ...GULP_CONFIG.gitignore])
         .pipe(git.add({ args: '-A', quiet: true }));
 };
 
@@ -147,7 +148,7 @@ function git_commit() {
 
     console.log(commitText);
 
-    return gulp.src(['./*', '!build', '!buildx', '!node_modules', '!package-lock.json'])
+    return gulp.src(['./*', ...GULP_CONFIG.gitignore])
         .pipe(git.commit(commitText));
 }
 
@@ -185,18 +186,23 @@ const g_add = series(git_add, git_status);
 const g_push = series(git_push, git_status);
 const g_send = series(git_add, git_commit, git_push, git_status);
 const g_pull = series(git_pull, git_status);
+/* #endregion */
 
 /* #region  Publication des tâches */
+
+/* #region Build et mode développement  */
 gulp.task('clean', 'Clean build and buildx folders.', ['cl'], clean);
 gulp.task('build_client', 'Build client code only.', ['bc'], build_client);
 gulp.task('build_server', 'Build server code only.', ['bs'], build_server);
 gulp.task('build', 'Build the full code.', ['b'], build);
 gulp.task('build_prod', 'Build the full code and uglify client code for production.', ['prod'], build_prod);
 gulp.task('start_dev', 'Start development mode : build and reload when a file change.', ['dev'], start_dev);
+/* #endregion */
 
+/* #region  GIT */
 gulp.task('git_init', 'git initialization', ['gi'], {
     '--url': '[STRING] URL of the git remote repository',
-},  git_initialization);
+}, git_initialization);
 gulp.task('git_add', 'Stage modified files', ['ga'], g_add);
 gulp.task('git_commit', 'Commit a FIX or a FEAT', ['gc'], {
     '--m': '[STRING] Message of the commit',
@@ -212,6 +218,7 @@ gulp.task('git_send', 'Commit and push changes', ['g'], {
     '--feat': '[BOOL] Tag the commit as a FEAT (new feature)',
 }, g_send);
 gulp.task('git_pull', 'Pull changes from current branch', ['gpl'], g_pull);
+/* #endregion */
 
 exports.default = start_dev;
 /* #endregion */

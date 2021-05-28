@@ -1,11 +1,10 @@
 {
   "name": "infraweb",
   "version": "1.0.0",
-  "description": "Architecture d'un serveur d'application web en typescript",
+  "description": "Template d'un serveur d'application web en typescript",
   "main": "server.ts",
   "dependencies": {
     "express": "^4.17.1",
-    "gulp-express": "^0.3.5",
     "socket.io": "^4.1.2",
     "typescript": "^4.2.4"
   },
@@ -27,7 +26,6 @@
     "nodemon": "^2.0.7"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "run": "node ./build/server.js"
   },
   "author": "Nativel Emmanuel",
