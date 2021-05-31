@@ -7,11 +7,12 @@ const { spawn } = require('child_process');
 const gulp = require('gulp');
 const help = require('gulp-help-four');
 const filter = require('gulp-filter');
-var browserSync = require('browser-sync').create();
-var nodemon = require('gulp-nodemon');
-var del = require('gulp-clean');
-var args = require('get-gulp-args')();
+const browserSync = require('browser-sync').create();
+const nodemon = require('gulp-nodemon');
+const del = require('gulp-clean');
+const args = require('get-gulp-args')();
 const git = require('gulp-git');
+const inject = require('gulp-inject');
 /* #endregion */
 
 /* #region  Configurations */
@@ -48,7 +49,7 @@ function cleanServer(next) {
 }
 
 function clean() {
-    return src('build/*')
+    return src(['build/*', 'buildx/*'])
         .pipe(del());
 }
 
@@ -72,13 +73,31 @@ function copy_www() {
 // Occultation du code client uniquement
 function buildx() {
     const f = filter(['build/www/**/*.js', '!build/www/**/*.min.js'], { restore: true })
-    return src('build/**/*.js')
+    return src('build/**')
         .pipe(f) // get only client files
         .pipe(uglify()) // The gulp-uglify plugin won't update the filename
         .pipe(rename({ extname: '.min.js' })) // So use gulp-rename to change the extension
         // .pipe(rename({ suffix: '.min' }))
         .pipe(f.restore) // exit from the filter (/www folder) to get the complete build/ folter
         .pipe(dest('buildx/'));
+}
+
+// Inject html tag in index.html to match renamed files in buildx folder
+function injectProdScript() {
+    var target = gulp.src('buildx/www/index.html');
+    var sources = gulp.src(['buildx/www/**/*.min.js'], { read: false });
+
+    return target.pipe(inject(sources, { relative: true }))
+        .pipe(gulp.dest('buildx/www'));
+}
+
+// Inject html tag in index.html to match renamed files in build folder
+function injectDevScript() {
+    var target = gulp.src('build/www/index.html');
+    var sources = gulp.src(['build/www/**/*.js', 'build/www/**/*.min.js'], { read: false });
+
+    return target.pipe(inject(sources, { relative: true }))
+        .pipe(gulp.dest('build/www'));
 }
 
 function initBrowserSync(next) {
@@ -110,8 +129,8 @@ function dev_watch(next) {
 
 const build_client = series(cleanClient, build_client_only, copy_www);
 const build_server = series(cleanServer, build_server_only);
-const build = series(clean, build_client_only, build_server_only, copy_www);
-const build_prod = series(clean, build, buildx);
+const build = series(clean, build_client_only, build_server_only, copy_www, injectDevScript);
+const build_prod = series(clean, build, buildx, injectProdScript);
 const start_dev = series(clean, build, initBrowserSync, dev_watch);
 
 /* #endregion */
