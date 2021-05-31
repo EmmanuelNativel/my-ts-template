@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Template d'un serveur d'application web en typescript",
   "main": "server.ts",
+  "repository": {
+    "url": "https://github.com/EmmanuelNativel/my-ts-template.git"
+  },
   "dependencies": {
     "express": "^4.17.1",
     "socket.io": "^4.1.2",
