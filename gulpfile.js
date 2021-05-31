@@ -76,6 +76,7 @@ function buildx() {
         .pipe(f) // get only client files
         .pipe(uglify()) // The gulp-uglify plugin won't update the filename
         .pipe(rename({ extname: '.min.js' })) // So use gulp-rename to change the extension
+        // .pipe(rename({ suffix: '.min' }))
         .pipe(f.restore) // exit from the filter (/www folder) to get the complete build/ folter
         .pipe(dest('buildx/'));
 }
