@@ -110,7 +110,7 @@ function dev_watch(next) {
 const build_client = series(cleanClient, build_client_only, copy_www);
 const build_server = series(cleanServer, build_server_only);
 const build = series(clean, build_client_only, build_server_only, copy_www);
-const build_prod = series(build, buildx);
+const build_prod = series(clean, build, buildx);
 const start_dev = series(clean, build, initBrowserSync, dev_watch);
 
 /* #endregion */
